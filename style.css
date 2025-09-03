@@ -49,3 +49,26 @@ th{background:#f8fafc;font-weight:600}
 .table-select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
 .inline-actions{display:flex;gap:6px}
 .badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:12px;background:#f1f5f9;border:1px solid var(--border);color:#334155}
+
+/* === cards (mobile first) === */
+.cards-grid{display:none;gap:12px}
+.p-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.p-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.p-title{font-weight:700}
+.p-size{color:var(--muted);font-size:12px}
+.p-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.p-metrics div{font-size:13px}
+.p-actions{display:flex;gap:6px;flex-wrap:wrap}
+.p-edit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.p-edit .full{grid-column:1/-1}
+.p-badge{display:inline-block;padding:2px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:#f1f5f9}
+.p-danger{color:#b91c1c}
+
+/* インライン入力 */
+.table-input,.table-select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
+
+/* 画面幅が狭いときはカード表示、テーブル非表示 */
+@media (max-width: 768px){
+  #products-table-wrap{display:none;}
+  #products-cards{display:grid;}
+}
