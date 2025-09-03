@@ -137,7 +137,7 @@ function handleAddProductForm(){
     const unit_type = qs("#p-unit").value;
     if (!category || !product_name || !unit_quantity){ alert("入力を確認してください。"); return; }
     addProduct({category, product_name, unit_quantity, unit_type});
-    form.reset(); refreshDatalists(); refreshPriceProductSelect(); refreshFilters(); renderProductsTable();
+    form.reset(); refreshDatalists(); refreshPriceProductSelect(); refreshFilters(); renderProductsTable();renderProductsCards();
     alert("商品を登録しました。");
   });
 }
@@ -161,7 +161,7 @@ function handleAddPriceForm(){
     const registered_at = regDate.value;
     if (!product_id || !store_name || (!normal_price && !sale_price)){ alert("入力を確認（価格はどちらか必須）"); return; }
     addPrice({product_id, store_name, normal_price, sale_price, registered_at});
-    form.reset(); regDate.value = todayStr(); renderProductsTable();
+    form.reset(); regDate.value = todayStr(); renderProductsTable();renderProductsCards();
     alert("価格を登録しました。");
   });
 }
@@ -217,7 +217,7 @@ function renderProductsTable(){
     btn.addEventListener("click", ()=>{
       const pid = btn.closest("tr").dataset.pid;
       if (confirm("この商品と関連する価格データを削除します。よろしいですか？")){
-        deleteProduct(pid); renderProductsTable(); qs("#detail-panel").hidden = true;
+        deleteProduct(pid); renderProductsTable(); renderProductsCards();qs("#detail-panel").hidden = true;
       }
     });
   });
@@ -228,6 +228,113 @@ function renderProductsTable(){
     });
   });
 }
+
+function renderProductsCards(){
+  const wrap = document.getElementById("products-cards");
+  if (!wrap) return;
+
+  const fcat = document.getElementById("filter-category").value;
+  const fname = document.getElementById("filter-name").value.trim();
+
+  let prods = db.products.slice();
+  if (fcat && fcat !== "（すべて）") prods = prods.filter(p => p.category === fcat);
+  if (fname) prods = prods.filter(p => p.product_name.includes(fname));
+  prods.sort((a,b)=>`${a.category}_${a.product_name}_${a.unit_type}_${a.unit_quantity}`
+    .localeCompare(`${b.category}_${b.product_name}_${b.unit_type}_${b.unit_quantity}`,"ja"));
+
+  wrap.innerHTML = "";
+  for (const p of prods){
+    const {bestTotal, bestUnit} = bestStoreForProduct(p);
+    const card = document.createElement("div");
+    card.className = "p-card";
+    card.dataset.pid = p.product_id;
+
+    card.innerHTML = `
+      <div class="p-head">
+        <span class="p-badge">${p.category}</span>
+        <span class="p-title">${p.product_name}</span>
+        <span class="p-size">${p.unit_quantity}${p.unit_type}</span>
+      </div>
+
+      <div class="p-metrics">
+        <div>底値: ${bestTotal ? fmtCurrency(bestTotal.price) : "-"}</div>
+        <div>単価最安: ${bestUnit ? fmtUnitPrice(bestUnit.unit_price, p.unit_type) : "-"}</div>
+        <div class="full">最安店舗: ${bestTotal ? bestTotal.store : (bestUnit ? bestUnit.store : "-")}</div>
+      </div>
+
+      <div class="p-actions">
+        <button class="action-btn btn-detail">詳細</button>
+        <button class="action-btn btn-edit">編集</button>
+        <button class="action-btn btn-del p-danger">削除</button>
+      </div>
+
+      <form class="p-edit" hidden>
+        <label>カテゴリ<input class="table-input ip-cat" value="${p.category}"></label>
+        <label>商品名<input class="table-input ip-name" value="${p.product_name}"></label>
+        <label>容量<input class="table-input ip-qty" type="number" step="0.01" min="0" value="${p.unit_quantity}"></label>
+        <label>単位
+          <select class="table-select ip-unit">
+            ${["ml","g","枚","個"].map(u=>`<option value="${u}" ${u===p.unit_type?"selected":""}>${u}</option>`).join("")}
+          </select>
+        </label>
+        <div class="full p-actions">
+          <button class="action-btn btn-save">保存</button>
+          <button class="action-btn btn-cancel">キャンセル</button>
+        </div>
+      </form>
+    `;
+
+    // 詳細
+    card.querySelector(".btn-detail").addEventListener("click", ()=>{
+      showDetail(p.product_id, p.product_name);
+      // 一覧下の詳細パネルへスクロール
+      document.getElementById("detail-panel").scrollIntoView({behavior:"smooth", block:"start"});
+    });
+
+    // 編集開始
+    card.querySelector(".btn-edit").addEventListener("click", ()=>{
+      card.querySelector(".p-edit").hidden = false;
+    });
+
+    // キャンセル
+    card.querySelector(".btn-cancel").addEventListener("click", (e)=>{
+      e.preventDefault();
+      card.querySelector(".p-edit").hidden = true;
+    });
+
+    // 保存
+    card.querySelector(".btn-save").addEventListener("click", (e)=>{
+      e.preventDefault();
+      const category = card.querySelector(".ip-cat").value.trim();
+      const name = card.querySelector(".ip-name").value.trim();
+      const qty  = +card.querySelector(".ip-qty").value;
+      const unit = card.querySelector(".ip-unit").value;
+      if (!category || !name || !qty){ alert("入力を確認してください。"); return; }
+      updateProduct(p.product_id, {category, product_name:name, unit_quantity:qty, unit_type:unit});
+      // 容量変更時の単価再計算
+      db.prices = db.prices.map(pr=>{
+        if (pr.product_id!==p.product_id) return pr;
+        const e = effPrice(pr.normal_price, pr.sale_price);
+        return {...pr, unit_price: (e!=null ? e/qty : null)};
+      });
+      saveJSON(LS_KEYS.prices, db.prices);
+      renderProductsTable(); // 集計を更新（PC表示用）
+      renderProductsCards(); // カード再描画（スマホ表示用）
+    });
+
+    // 削除
+    card.querySelector(".btn-del").addEventListener("click", ()=>{
+      if (!confirm("この商品と関連する価格データを削除します。よろしいですか？")) return;
+      deleteProduct(p.product_id);
+      renderProductsTable();renderProductsCards();
+      renderProductsCards();
+      document.getElementById("detail-panel").hidden = true;
+    });
+
+    wrap.appendChild(card);
+  }
+}
+
 
 // ====== 商品：インライン編集 ===============================================
 function startProductInlineEdit(tr){
@@ -259,7 +366,7 @@ function startProductInlineEdit(tr){
     const unit = tr.querySelector(".ip-unit").value;
     if (!category || !name || !qty){ alert("入力を確認してください。"); return; }
     updateProduct(pid, {category, product_name:name, unit_quantity:qty, unit_type:unit});
-    refreshDatalists(); refreshPriceProductSelect(); renderProductsTable();
+    refreshDatalists(); refreshPriceProductSelect(); renderProductsTable();renderProductsCards();
   });
   actions.querySelector(".btn-cancel-product").addEventListener("click", renderProductsTable);
 }
@@ -298,7 +405,7 @@ function showDetail(product_id){
     btn.addEventListener("click", ()=>{
       const id = btn.closest("tr").dataset.id;
       if (confirm("この価格レコードを削除します。よろしいですか？")){
-        deletePrice(id); renderProductsTable(); showDetail(product_id);
+        deletePrice(id); renderProductsTable();renderProductsCards(); showDetail(product_id);
       }
     });
   });
@@ -333,7 +440,7 @@ function startPriceInlineEdit(tr, product_id){
     const date = tr.querySelector(".ip-date").value || todayStr();
     if (!store || (n==null && s==null)){ alert("入力を確認してください。（価格はどちらか必須）"); return; }
     updatePrice(id, {store_name:store, normal_price:n, sale_price:s, registered_at:date});
-    renderProductsTable(); showDetail(product_id);
+    renderProductsTable(); renderProductsCards();showDetail(product_id);
   });
   tr.querySelector(".btn-cancel-price").addEventListener("click", ()=>showDetail(product_id));
 }
@@ -416,7 +523,7 @@ function handleCheckForm(){
         product = addProduct({category: cat || "未分類", product_name: name, unit_quantity: qty, unit_type: unit});
       }
       addPrice({product_id: product.product_id, store_name: (store||"不明店舗"), normal_price: price, sale_price: null, registered_at: todayStr()});
-      renderProductsTable();
+      renderProductsTable();renderProductsCards();
       alert("DBへ登録しました。");
       btnReg.hidden = true;
     };
@@ -430,11 +537,22 @@ function init(){
   refreshPriceProductSelect();
   refreshFilters();
   renderProductsTable();
+  renderProductsCards();
   handleAddProductForm();
   handleAddPriceForm();
   handleCheckForm();
-  qs("#btn-refresh-list").addEventListener("click", ()=>{ refreshFilters(); renderProductsTable(); });
-  qs("#filter-category").addEventListener("change", renderProductsTable);
-  qs("#filter-name").addEventListener("input", renderProductsTable);
+  qs("#btn-refresh-list").addEventListener("click", () => {
+  refreshFilters();
+  renderProductsTable();
+  renderProductsCards(); // ← 追加
+  });
+  qs("#filter-category").addEventListener("change", () => {
+  renderProductsTable();
+  renderProductsCards(); // ← 追加
+  });
+  qs("#filter-name").addEventListener("input", () => {
+  renderProductsTable();
+  renderProductsCards(); // ← 追加
+  });
 }
 document.addEventListener("DOMContentLoaded", init);
