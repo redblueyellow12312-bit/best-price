@@ -1,209 +1,74 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>最安値チェッカー（商品DB＋購入判定）</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header class="app-header">
-    <h1>最安値チェッカー</h1>
-    <nav class="tabs">
-      <button class="tab-button active" data-target="#tab-register">商品登録</button>
-      <button class="tab-button" data-target="#tab-prices">価格登録</button>
-      <button class="tab-button" data-target="#tab-list">商品一覧</button>
-      <button class="tab-button" data-target="#tab-check">購入チェック</button>
-    </nav>
-  </header>
+:root{
+  --bg:#f6f7fb; --card:#fff; --text:#222; --muted:#666;
+  --primary:#2563eb; --primary-600:#1d4ed8; --accent:#10b981;
+  --danger:#ef4444; --warn:#f59e0b; --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--text);background:var(--bg)}
+h1,h2,h3{margin:0 0 12px}
 
-  <!-- 商品登録 -->
-  <section id="tab-register" class="tab-panel active">
-    <h2>商品をDBに登録</h2>
-    <form id="form-add-product" class="card form-grid">
-      <label>カテゴリ
-        <input type="text" id="p-category" list="datalist-categories" required />
-      </label>
-      <datalist id="datalist-categories"></datalist>
+.app-header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;z-index:5}
+.app-header h1{font-size:20px;margin-bottom:8px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab-button{padding:8px 12px;background:#eef2ff;color:#334155;border:1px solid #c7d2fe;border-radius:8px;cursor:pointer}
+.tab-button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
-      <label>商品名（シリーズ名）
-        <input type="text" id="p-name" list="datalist-names" placeholder="例: コーラ" required />
-      </label>
-      <datalist id="datalist-names"></datalist>
+.tab-panel{display:none;padding:16px;max-width:1100px;margin:0 auto}
+.tab-panel.active{display:block}
 
-      <label>容量
-        <input type="number" id="p-qty" min="0" step="0.01" required />
-      </label>
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
 
-      <label>単位
-        <select id="p-unit">
-          <option value="ml">ml</option>
-          <option value="g">g</option>
-          <option value="枚">枚</option>
-          <option value="個">個</option>
-        </select>
-      </label>
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
+label{display:flex;flex-direction:column;gap:6px;font-size:16px}
+input,select,button{font-size:16px}
+input,select{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff}
+button{padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer}
+button.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+button.primary:hover{background:var(--primary-600)}
+button.secondary{background:#f1f5f9}
+button:disabled{opacity:.6;cursor:not-allowed}
 
-      <button type="submit" class="primary">登録する</button>
-    </form>
+.hint{color:var(--muted);font-size:13px;margin-top:8px}
 
-    <div class="hint">
-      同じ商品でも容量違いは<strong>別商品</strong>として登録（例：500ml、1.5L）。
-    </div>
-  </section>
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid var(--border);padding:10px;text-align:left;vertical-align:middle}
+th{background:#f8fafc;font-weight:600}
+#products-table-wrap{overflow-x:auto}
+.muted{color:var(--muted)} .small{font-size:12px}
 
-  <!-- 価格登録 -->
-  <section id="tab-prices" class="tab-panel">
-    <h2>店舗別の価格を登録</h2>
-    <form id="form-add-price" class="card form-grid">
-      <label>商品（容量込み）
-        <select id="price-product-select" required></select>
-      </label>
+.result-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.result-num{font-size:20px;font-weight:700;margin-top:4px}
+.judge{margin-top:12px;font-size:18px;font-weight:700}
+.judge.ok{color:var(--accent)} .judge.warn{color:var(--warn)} .judge.ng{color:var(--danger)}
+.actions{margin-top:12px;display:flex;gap:8px}
+.app-footer{padding:12px 16px;border-top:1px solid var(--border);color:var(--muted)}
+.action-btn{margin-right:6px}
 
-      <label>店舗名
-        <input type="text" id="store-name" required placeholder="例: スーパーA" />
-      </label>
+/* インライン編集用 */
+.table-input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px}
+.table-select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
+.inline-actions{display:flex;gap:6px}
+.badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:12px;background:#f1f5f9;border:1px solid var(--border);color:#334155}
 
-      <label>通常価格（円）
-        <input type="number" id="normal-price" min="0" step="0.01" />
-      </label>
+/* === cards (mobile first) === */
+.cards-grid{display:none;gap:12px}
+.p-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.p-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.p-title{font-weight:700}
+.p-size{color:var(--muted);font-size:12px}
+.p-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.p-metrics div{font-size:13px}
+.p-actions{display:flex;gap:6px;flex-wrap:wrap}
+.p-edit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.p-edit .full{grid-column:1/-1}
+.p-badge{display:inline-block;padding:2px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:#f1f5f9}
+.p-danger{color:#b91c1c}
 
-      <label>セール価格（円）
-        <input type="number" id="sale-price" min="0" step="0.01" />
-      </label>
+/* インライン入力 */
+.table-input,.table-select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
 
-      <label>登録日
-        <input type="date" id="registered-at" />
-      </label>
-
-      <button type="submit" class="primary">価格を登録する</button>
-    </form>
-
-    <div class="hint">
-      単価（円/単位）は自動計算して保存。比較は「有効価格＝セール優先」。
-    </div>
-  </section>
-
-  <!-- 商品一覧 -->
-  <section id="tab-list" class="tab-panel">
-    <h2>商品一覧（カテゴリ → 商品）</h2>
-    <div class="card form-grid">
-      <label>カテゴリで絞り込み
-        <select id="filter-category"></select>
-      </label>
-      <label>商品名で検索
-        <input type="text" id="filter-name" placeholder="例: コーラ" />
-      </label>
-      <button id="btn-refresh-list">更新</button>
-    </div>
-
-    <div id="products-table-wrap" class="card">
-      <table id="products-table">
-        <thead>
-          <tr>
-            <th>カテゴリ</th>
-            <th>商品名</th>
-            <th>容量</th>
-            <th>単位</th>
-            <th>底値（総額）</th>
-            <th>単価最安（円/単位）</th>
-            <th>最安店舗</th>
-            <th>詳細</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody><!-- JS --></tbody>
-      </table>
-      <div class="muted small">※ 底値・単価最安は保存済み価格から自動集計</div>
-    </div>
-    <div id="products-cards" class="cards-grid"><!-- JSで描画 --></div>
-
-    <div id="detail-panel" class="card" hidden>
-      <h3 id="detail-title">詳細</h3>
-      <table id="prices-table">
-        <thead>
-          <tr>
-            <th>店舗</th>
-            <th>通常</th>
-            <th>セール</th>
-            <th>有効価格</th>
-            <th>単価（円/単位）</th>
-            <th>登録日</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody><!-- JS --></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- 購入チェック -->
-  <section id="tab-check" class="tab-panel">
-    <h2>購入チェック（買い時判定）</h2>
-    <form id="form-check" class="card form-grid">
-      <label>商品名（シリーズ）
-        <input type="text" id="c-name" list="datalist-names" placeholder="例: コーラ" required />
-      </label>
-
-      <label>カテゴリ
-        <input type="text" id="c-category" list="datalist-categories" placeholder="任意（自動補完あり）" />
-      </label>
-
-      <label>今回の容量
-        <input type="number" id="c-qty" min="0" step="0.01" required />
-      </label>
-
-      <label>単位
-        <select id="c-unit">
-          <option value="ml">ml</option>
-          <option value="g">g</option>
-          <option value="枚">枚</option>
-          <option value="個">個</option>
-        </select>
-      </label>
-
-      <label>今回の価格（円）
-        <input type="number" id="c-price" min="0" step="0.01" required />
-      </label>
-
-      <label>店舗名（購入候補）
-        <input type="text" id="c-store" placeholder="例: スーパーB" />
-      </label>
-
-      <button type="submit" class="primary">判定する</button>
-    </form>
-
-    <div id="check-result" class="card" hidden>
-      <div class="result-row">
-        <div>
-          <div class="muted">今回の単価</div>
-          <div id="r-current-unit" class="result-num">-</div>
-        </div>
-        <div>
-          <div class="muted">商品底値（同容量の最安総額）</div>
-          <div id="r-bottom-total" class="result-num">-</div>
-          <div id="r-bottom-total-note" class="small muted"></div>
-        </div>
-        <div>
-          <div class="muted">単価最安（全容量横断）</div>
-          <div id="r-bottom-unit" class="result-num">-</div>
-          <div id="r-bottom-unit-note" class="small muted"></div>
-        </div>
-      </div>
-      
-
-      <div id="r-judge" class="judge">-</div>
-
-      <div class="actions">
-        <button id="btn-register-best" class="secondary" hidden>この価格をDBに登録</button>
-      </div>
-    </div>
-  </section>
-
-  <footer class="app-footer">
-    <span class="muted small">ローカル保存（localStorage）。PWA化は後で追加可能。</span>
-  </footer>
-
-  <script src="app.js"></script>
-</body>
-</html>
+/* 画面幅が狭いときはカード表示、テーブル非表示 */
+@media (max-width: 768px){
+  #products-table-wrap{display:none;}
+  #products-cards{display:grid;}
+}
