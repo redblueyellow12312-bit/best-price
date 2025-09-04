@@ -87,3 +87,21 @@ th{background:#f8fafc;font-weight:600}
   #products-table-wrap{display:none;}
   #products-cards{display:grid;}
 }
+
+/* ▼ 詳細だけ：ボタン折り返し可にする */
+#detail-panel .inline-actions{
+  flex-wrap: wrap;   /* 2段に折り返し可 */
+}
+
+/* ▼ 詳細だけ：フォントと行間を少し小さく */
+#detail-panel table th,
+#detail-panel table td{
+  font-size: 13px;   /* 通常より小さめ */
+  padding: 6px 8px;
+}
+
+/* ▼ 詳細ボタンも一回り小さく */
+#detail-panel .inline-actions button{
+  font-size: 12px;
+  padding: 4px 8px;
+}
