@@ -24,7 +24,16 @@ input,select,textarea,button{font-size:16px}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
 label{display:flex;flex-direction:column;gap:6px}
 .row-compact{display:flex;gap:8px;align-items:center}
-.cat-row{display:flex;gap:10px;align-items:center;flex-wrap:nowrap} /* ←横一列を維持 */
+
+/* ▼ 修正：カテゴリ入力とパレットを縦積み（上:入力、下:パレット） */
+.cat-row{
+  display:flex;
+  flex-direction:column;   /* 入力の“下”にパレットを配置 */
+  align-items:flex-start;
+  gap:8px;
+  width:100%;
+}
+
 button{padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer}
 button.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
 button.primary:hover{background:var(--primary-600)}
@@ -52,7 +61,6 @@ th{background:#f8fafc;font-weight:600}
 .badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:12px;background:#f1f5f9;border:1px solid var(--border);color:#334155}
 
 /* カラーパレット（10色・横並び固定） */
-/* カラーパレット */
 .palette-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .palette-row .sw{width:24px;height:24px;border-radius:999px;border:1px solid #ddd;cursor:pointer}
 .palette-row .sw.selected{border:2px solid #111}
@@ -75,4 +83,37 @@ th{background:#f8fafc;font-weight:600}
 @media (max-width: 768px){
   #products-table-wrap{display:none;}
   #products-cards{display:grid;}
+}
+
+/* ▼ 価格を登録：商品名候補が枠からはみ出ないように（入力の下に表示） */
+/* 入力と候補の親（HTML側でこのクラスを付与してください） */
+.price-row{
+  display:flex;
+  flex-direction:column;     /* 入力の下に候補を置く */
+  align-items:stretch;
+  gap:6px;
+}
+
+/* 候補リストの包み */
+.product-suggestions{
+  display:block;             /* 横並びをやめて下に出す */
+  white-space:normal;        /* 長文でも折り返し */
+  overflow-wrap:anywhere;    /* 長い語でも折り返し */
+  max-width:100%;
+}
+
+/* 候補チップ */
+.product-suggestions .chip{
+  display:inline-block;
+  padding:4px 8px;
+  border:1px solid var(--border);
+  border-radius:9999px;
+  background:#f1f5f9;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  vertical-align:middle;
+  /* 念のため、右側に飛ぶ指定を打ち消し */
+  float:none !important;
+  position:static !important;
 }
