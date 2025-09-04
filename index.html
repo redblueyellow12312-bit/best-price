@@ -10,27 +10,26 @@
   <header class="app-header">
     <h1>最安値チェッカー</h1>
     <div class="tabs">
-      <button class="tab-button active" data-target="#tab-product">商品登録</button>
-      <button class="tab-button" data-target="#tab-price">価格登録</button>
-      <button class="tab-button" data-target="#tab-list">商品一覧</button>
+      <button class="tab-button active" data-target="#tab-manage">商品管理</button>
       <button class="tab-button" data-target="#tab-check">購入チェック</button>
       <button class="tab-button" data-target="#tab-backup">バックアップ</button>
     </div>
   </header>
 
-  <!-- 商品登録 -->
-  <section id="tab-product" class="tab-panel active">
+  <!-- 商品管理タブ：商品登録 → 価格登録 → 商品一覧（同一タブ内に縦並び） -->
+  <section id="tab-manage" class="tab-panel active">
+    <!-- 商品登録 -->
     <div class="card">
       <h2>商品を登録</h2>
       <form id="form-add-product" class="form-grid">
         <label>カテゴリ
-          <input id="p-category" list="datalist-categories" placeholder="例：飲料" />
+          <div class="cat-row">
+            <input id="p-category" list="datalist-categories" placeholder="例：飲料" />
+            <!-- 横並びの10色パレット。選択はリング表示 -->
+            <div id="p-color-palette" class="palette-row" aria-label="カテゴリ色"></div>
+            <input id="p-category-color" type="hidden" value="#3b82f6" />
+          </div>
           <datalist id="datalist-categories"></datalist>
-        </label>
-
-        <label>色（10色パレット）
-          <input id="p-category-color" type="text" value="#3b82f6" hidden />
-          <div id="p-color-palette" class="palette-row"></div>
         </label>
 
         <label>商品名
@@ -54,36 +53,40 @@
         <button class="primary" type="submit">登録</button>
       </form>
     </div>
-  </section>
 
-  <!-- 価格登録 -->
-  <section id="tab-price" class="tab-panel">
+    <!-- 価格登録（カテゴリ→商品 2段絞り込み + 再登録時は選択保持） -->
     <div class="card">
-      <h2>価格を登録（上書き更新：商品×店舗×価格種別）</h2>
+      <h2>価格を登録</h2>
       <form id="form-add-price" class="form-grid">
-        <label>商品
-          <select id="price-product-select"></select>
+        <label>カテゴリで絞込
+          <select id="price-cat-filter"></select>
         </label>
+
+        <label>商品
+          <div class="row-compact">
+            <input id="price-prod-search" placeholder="商品名検索（部分一致）" />
+            <select id="price-product-select"></select>
+          </div>
+        </label>
+
         <label>店舗
-          <input id="store-name" placeholder="例：〇〇スーパー 本店" />
+          <input id="store-name" placeholder="例：スーパーA" />
         </label>
         <label>通常価格（円）
-          <input id="normal-price" type="number" step="0.01" min="0" placeholder="例：128" />
+          <input id="normal-price" type="number" step="0.01" min="0" />
         </label>
         <label>セール価格（円）
-          <input id="sale-price" type="number" step="0.01" min="0" placeholder="例：98" />
+          <input id="sale-price" type="number" step="0.01" min="0" />
         </label>
         <label>日付
           <input id="registered-at" type="date" />
         </label>
+
         <button class="primary" type="submit">保存（上書き）</button>
       </form>
-      <p class="hint">※ 通常/セールのどちらかを入力。既存があれば上書き、なければ追加。</p>
     </div>
-  </section>
 
-  <!-- 商品一覧 -->
-  <section id="tab-list" class="tab-panel">
+    <!-- 商品一覧 -->
     <div class="card">
       <h2>商品一覧</h2>
       <div class="form-grid">
@@ -91,7 +94,7 @@
           <select id="filter-category"></select>
         </label>
         <label>商品名で検索
-          <input id="filter-name" placeholder="部分一致で絞り込み" />
+          <input id="filter-name" placeholder="例：コーラ" />
         </label>
       </div>
     </div>
@@ -115,18 +118,18 @@
       </table>
     </div>
 
+    <!-- モバイル向けカード -->
     <div id="products-cards" class="cards-grid"></div>
 
+    <!-- 詳細（価格一覧 & インライン編集） -->
     <div id="detail-panel" class="card" hidden>
       <h3 id="detail-title">詳細</h3>
-      <div class="hint">下の一覧はこの商品の価格履歴（上書き運用のため「店舗×価格種別」で1行に整理されます）</div>
       <table id="prices-table">
         <thead>
           <tr>
             <th>店舗</th>
             <th>通常価格</th>
             <th>セール価格</th>
-            <th>実効価格</th>
             <th>単価</th>
             <th>日付</th>
             <th>操作</th>
@@ -137,12 +140,12 @@
     </div>
   </section>
 
-  <!-- 購入チェック -->
+  <!-- 購入チェック（カテゴリ登録可・DB登録は上書き＆一覧即時反映） -->
   <section id="tab-check" class="tab-panel">
     <div class="card">
       <h2>購入チェック</h2>
       <form id="form-check" class="form-grid">
-        <label>カテゴリ（新規作成OK）
+        <label>カテゴリ
           <input id="c-category" list="datalist-categories" placeholder="例：飲料" />
         </label>
         <label>商品名
@@ -160,10 +163,10 @@
           </select>
         </label>
         <label>店舗
-          <input id="c-store" placeholder="例：〇〇スーパー 本店" />
+          <input id="c-store" placeholder="例：スーパーA" />
         </label>
         <label>価格（円）
-          <input id="c-price" type="number" step="0.01" min="0" placeholder="例：98" />
+          <input id="c-price" type="number" step="0.01" min="0" />
         </label>
         <label>価格種別
           <select id="c-price-type">
@@ -178,26 +181,11 @@
     <div id="check-result" class="card" hidden>
       <h3>判定結果</h3>
       <div class="result-row">
-        <div>
-          <div class="muted">現在価格</div>
-          <div id="r-current-total" class="result-num">-</div>
-        </div>
-        <div>
-          <div class="muted">現在単価</div>
-          <div id="r-current-unit" class="result-num">-</div>
-        </div>
-        <div>
-          <div class="muted">底値（同容量）</div>
-          <div id="r-bottom-total" class="result-num">-</div>
-          <div id="r-bottom-total-note" class="small muted"></div>
-        </div>
-        <div>
-          <div class="muted">最安値（単価・横断）</div>
-          <div id="r-bottom-unit" class="result-num">-</div>
-          <div id="r-bottom-unit-note" class="small muted"></div>
-        </div>
+        <div><div class="muted">現在価格</div><div id="r-current-total" class="result-num">-</div></div>
+        <div><div class="muted">現在単価</div><div id="r-current-unit" class="result-num">-</div></div>
+        <div><div class="muted">底値（同容量）</div><div id="r-bottom-total" class="result-num">-</div><div id="r-bottom-total-note" class="small muted"></div></div>
+        <div><div class="muted">最安値（単価・横断）</div><div id="r-bottom-unit" class="result-num">-</div><div id="r-bottom-unit-note" class="small muted"></div></div>
       </div>
-
       <div id="r-judge" class="judge">-</div>
       <div class="actions">
         <button id="btn-register-best" class="primary">この価格をDBに登録（上書き）</button>
@@ -213,7 +201,6 @@
         <button id="btn-export">JSONを書き出し</button>
         <input id="file-import" type="file" accept="application/json" />
       </div>
-      <p class="hint">ローカルストレージが消えたときに復元できます。</p>
     </div>
   </section>
 
