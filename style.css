@@ -20,8 +20,11 @@ input,select,textarea,button{font-size:16px}
 .tab-panel.active{display:block}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
 label{display:flex;flex-direction:column;gap:6px}
+.row-compact{display:flex;gap:8px;align-items:center}
+.cat-row{display:flex;gap:10px;align-items:center;flex-wrap:nowrap} /* ←横一列を維持 */
 button{padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer}
 button.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
 button.primary:hover{background:var(--primary-600)}
@@ -48,6 +51,7 @@ th{background:#f8fafc;font-weight:600}
 .inline-actions{display:flex;gap:6px}
 .badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:12px;background:#f1f5f9;border:1px solid var(--border);color:#334155}
 
+/* カラーパレット（10色・横並び固定） */
 /* カラーパレット */
 .palette-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .palette-row .sw{width:24px;height:24px;border-radius:999px;border:1px solid #ddd;cursor:pointer}
@@ -55,14 +59,14 @@ th{background:#f8fafc;font-weight:600}
 
 /* === cards (mobile first) === */
 .cards-grid{display:none;gap:12px}
-.p-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.p-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.04)}
 .p-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .p-title{font-weight:700}
 .p-size{color:var(--muted);font-size:12px}
 .p-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
 .p-metrics div{font-size:13px}
 .p-actions{display:flex;gap:6px;flex-wrap:wrap}
-.p-edit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.p-edit{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px} /* ←最初は非表示 */
 .p-edit .full{grid-column:1/-1}
 .p-badge{display:inline-block;padding:2px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:#f1f5f9}
 .p-danger{color:#b91c1c}
