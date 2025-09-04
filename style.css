@@ -7,6 +7,9 @@
 html,body{margin:0;padding:0;font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--text);background:var(--bg)}
 h1,h2,h3{margin:0 0 12px}
 
+/* iOSズーム抑止 */
+input,select,textarea,button{font-size:16px}
+
 .app-header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;z-index:5}
 .app-header h1{font-size:20px;margin-bottom:8px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
@@ -19,16 +22,14 @@ h1,h2,h3{margin:0 0 12px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
 
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
-label{display:flex;flex-direction:column;gap:6px;font-size:16px}
-input,select,button{font-size:16px}
-input,select{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff}
+label{display:flex;flex-direction:column;gap:6px}
+.row-compact{display:flex;gap:8px;align-items:center}
+.cat-row{display:flex;gap:10px;align-items:center;flex-wrap:nowrap} /* ←横一列を維持 */
 button{padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer}
 button.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
 button.primary:hover{background:var(--primary-600)}
-button.secondary{background:#f1f5f9}
 button:disabled{opacity:.6;cursor:not-allowed}
-
-.hint{color:var(--muted);font-size:13px;margin-top:8px}
+.hint{color:var(--muted);font-size:13px;margin-top:6px}
 
 table{width:100%;border-collapse:collapse}
 th,td{border-bottom:1px solid var(--border);padding:10px;text-align:left;vertical-align:middle}
@@ -45,27 +46,30 @@ th{background:#f8fafc;font-weight:600}
 .action-btn{margin-right:6px}
 
 /* インライン編集用 */
-.table-input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px}
+.table-input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
 .table-select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
 .inline-actions{display:flex;gap:6px}
 .badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:12px;background:#f1f5f9;border:1px solid var(--border);color:#334155}
 
+/* カラーパレット（10色・横並び固定） */
+/* カラーパレット */
+.palette-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.palette-row .sw{width:24px;height:24px;border-radius:999px;border:1px solid #ddd;cursor:pointer}
+.palette-row .sw.selected{border:2px solid #111}
+
 /* === cards (mobile first) === */
 .cards-grid{display:none;gap:12px}
-.p-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.p-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.04)}
 .p-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .p-title{font-weight:700}
 .p-size{color:var(--muted);font-size:12px}
 .p-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
 .p-metrics div{font-size:13px}
 .p-actions{display:flex;gap:6px;flex-wrap:wrap}
-.p-edit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.p-edit{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px} /* ←最初は非表示 */
 .p-edit .full{grid-column:1/-1}
 .p-badge{display:inline-block;padding:2px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:#f1f5f9}
 .p-danger{color:#b91c1c}
-
-/* インライン入力 */
-.table-input,.table-select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;background:#fff}
 
 /* 画面幅が狭いときはカード表示、テーブル非表示 */
 @media (max-width: 768px){
